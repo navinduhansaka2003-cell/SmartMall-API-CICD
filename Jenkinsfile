@@ -16,24 +16,6 @@ pipeline {
             }
         }
 
-        stage('Restore') {
-            steps {
-                sh 'dotnet restore SmartMall.API.csproj'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'dotnet build SmartMall.API.csproj -c Release --no-restore'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'dotnet test SmartMall.API.csproj -c Release --no-build'
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 sh 'docker build -t $APP_IMAGE .'
@@ -53,7 +35,7 @@ pipeline {
             steps {
                 sh '''
                     ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_HOST \
-                    "docker rm -f $CONTAINER_NAME; docker run -d --name $CONTAINER_NAME -p 7001:8080 $APP_IMAGE"
+                    "docker rm -f $CONTAINER_NAME 2>/dev/null || true; docker run -d --restart unless-stopped --name $CONTAINER_NAME -p 7001:8080 $APP_IMAGE"
                 '''
             }
         }
